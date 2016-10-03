@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<body bgcolor="green">
+<p>
+<center>
+<font color="yellow">
+Palya merete? 
+<input type="button" value=" - " onClick="minusz()">
+<span id="sp">7</span>
+<input type="button" value=" + " onClick="plusz()">
+<input type="button" value=" Mehet " onClick="load()">
+</font>
+</center>
+</p>
+<script>
+	
+	var tablameret=7;
+	function minusz() {
+		if(document.getElementById("sp").innerHTML>3) {
+			tablameret--;
+			document.getElementById("sp").innerHTML--;
+		}
+	}
+	function plusz() {
+		if(document.getElementById("sp").innerHTML<9) {
+			tablameret++;
+			document.getElementById("sp").innerHTML++;
+		}
+	}
+	
+	var val;
+	var imgblue = "<img src=blueplayer.jpg height=40 width=40>";
+    var imgred = "<img src=redplayer.jpg height=40 width=40>";
+	var blocking=false;
+	var redx;
+	var redy;
+	var bluex;
+	var bluey;
+	var turn=0; //0 red 1 blue
+	
+	
+	
+	function load() {
+	document.body.innerHTML="";
+	val=new Array(tablameret); //0 empty 1 player 2 computer 3 blocked
+	redx=0;
+	redy=Math.floor((tablameret-1)/2);
+	bluex=tablameret-1;
+	bluey=Math.floor((tablameret-1)/2);
+		for(var i=0; i<tablameret; i++) {
+			val[i]=new Array(tablameret);
+			for(var j=0; j<tablameret; j++) {
+				val[i][j]=0;
+			}
+		}
+		val[redx][redy]=1;
+		val[bluex][bluey]=2;
+		
+		var pp = document.createElement("p");
+		pp.setAttribute("id", "p1");
+		pp.style.textAlign = "center";
+		var ss1 = document.createElement("span");
+		ss1.setAttribute("id", "span1");
+		ss1.innerHTML="Piros";
+		ss1.style.color='red';
+		pp.appendChild(ss1);
+		var ss2 = document.createElement("span");
+		ss2.setAttribute("id", "span2");
+		ss2.innerHTML=" lep!";
+		ss2.style.color='white';
+		pp.appendChild(ss2);
+		document.body.appendChild(pp);
+		
+		var tt = document.createElement("TABLE");
+		tt.border=1;
+		tt.setAttribute("id", "mytable");
+		tt.setAttribute("align", "center");
+		document.body.appendChild(tt);
+		for(var si=0; si<tablameret; si++) {
+			var sori = document.createElement("TR");
+			sori.setAttribute("id", "tr"+si);
+			sori.setAttribute("style", "color:blue");
+			document.getElementById("mytable").appendChild(sori);
+			for(var oi=0; oi<tablameret; oi++) {
+				var oo = document.createElement("TD");
+				oo.setAttribute("id", si*tablameret+oi);
+				oo.setAttribute("height", 50);
+				oo.setAttribute("width", 50);
+				oo.setAttribute("align", "center");
+				oo.setAttribute("style", "font-size:25px");
+				oo.setAttribute("bgcolor", "white");
+				oo.onclick=function(){lep(this.id)};
+				
+				document.getElementById("tr"+si).appendChild(oo);
+			}
+		}
+		document.getElementById(tablameret*redx+redy).innerHTML=imgred;
+		document.getElementById(tablameret*bluex+bluey).innerHTML=imgblue;
+	}
+	function szomszed(mezo, szin) {
+		var mx=Math.floor(mezo/tablameret);
+		var my=mezo%tablameret;
+		if(szin==0) {
+			if(Math.abs(mx-redx)<=1 && Math.abs(my-redy)<=1) return true;
+			return false;
+		}
+		else {
+			if(Math.abs(mx-bluex)<=1 && Math.abs(my-bluey)<=1) return true;
+			return false;
+		}
+		return false;
+	}
+	function validcell(xx, yy) {
+		if(0<=xx && xx<tablameret && 0<=yy && yy<tablameret && val[xx][yy]==0) return true;
+		return false;
+	}
+	function canmove(szin) {
+		if(szin==0) {
+			var possible = [];
+			for(var i=-1; i<=1; i++) {
+				for(var j=-1; j<=1; j++) {
+					if(i==0 && j==0) continue;
+					if(validcell(redx+i, redy+j)) {
+						possible.push((redx+i)*tablameret+(redy+j));
+					}
+				}
+			}
+			if(possible.length==0) return false;
+			return true;
+		}
+		else {
+			var possible = [];
+			for(var i=-1; i<=1; i++) {
+				for(var j=-1; j<=1; j++) {
+					if(i==0 && j==0) continue;
+					if(validcell(bluex+i, bluey+j)) {
+						possible.push((bluex+i)*tablameret+(bluey+j));
+					}
+				}
+			}
+			if(possible.length==0) return false;
+			return true;
+		}
+		return false;
+	}
+	function lep(mezo) {
+		if(blocking==true) {
+			block(mezo);
+			return;
+		}
+		if(!szomszed(mezo, turn)) {
+			alert("ide nem lephetsz");
+			return;
+		}
+		if(!validcell(Math.floor(mezo/tablameret), mezo%tablameret)) {
+			alert("ide nem lephetsz");
+			return;
+		}
+		if(turn==0) {
+		val[redx][redy]=0;
+		document.getElementById(tablameret*redx+redy).innerHTML="";
+		document.getElementById(mezo).innerHTML=imgred;
+		redx=Math.floor(mezo/tablameret);
+		redy=mezo%tablameret;
+		val[redx][redy]=1;
+		blocking=true;
+		document.getElementById("span2").innerHTML=" blokkol!";
+		}
+		else {
+		val[bluex][bluey]=0;
+		document.getElementById(tablameret*bluex+bluey).innerHTML="";
+		document.getElementById(mezo).innerHTML=imgblue;
+		bluex=Math.floor(mezo/tablameret);
+		bluey=mezo%tablameret;
+		val[bluex][bluey]=2;
+		blocking=true;
+		document.getElementById("span2").innerHTML=" blokkol!";
+		}
+	}	
+	function block(mezo) {
+		var bx=Math.floor(mezo/tablameret);
+		var by=mezo%tablameret;
+		if(!validcell(bx, by)) {
+			alert("ezt nem blokkolhatod");
+			return;
+		}
+		if(turn==0) {
+			val[bx][by]=3;
+			document.getElementById(tablameret*bx+by).setAttribute("bgcolor", "grey");
+			if(!canmove(1)) {
+				setTimeout(function (){vege("Piros nyert!");}, 1000);
+				return;
+			}
+			blocking=false;
+			turn=1;
+			document.getElementById("span1").innerHTML="Kek";
+			document.getElementById("span1").style.color='blue';
+			document.getElementById("span2").innerHTML=" lep!";
+		}
+		else {
+			val[bx][by]=3;
+			document.getElementById(tablameret*bx+by).setAttribute("bgcolor", "grey");
+			if(!canmove(0)) {
+				setTimeout(function (){vege("Kek nyert!");}, 1000);
+				return;
+			}
+			blocking=false;
+			turn=0;
+			document.getElementById("span1").innerHTML="Piros";
+			document.getElementById("span1").style.color='red';
+			document.getElementById("span2").innerHTML=" lep!";
+		}
+	}
+	function vege(ss) {
+		document.body.innerHTML="";
+		
+		var s2="<center>"
+		var s3="</br><a href='jatek2.html'>UJ JATEK</a></br><a href='index.html'>MENU</a></center>";
+		document.write(s2+ss+s3);
+	}
+</script>
+</body>
+</html>
